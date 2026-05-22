@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PSL Toolkit</title>
+    <title>PSL Tracker</title>
     <style>
         :root {
             --bg-earth: #EAE3D9;
-            --card-tan: #D9D2C5;
+            --glass-tan: rgba(217, 210, 197, 0.85);
             --moss-green: #4A5D4C;
-            --moss-translucent: rgba(74, 93, 76, 0.3);
             --light-green: #8BA18E;
+            --ladybug-red: #A34A4A;
             --text-dark: #2F3630;
-            --shadow: 6px 6px 15px rgba(0,0,0,0.1), -6px -6px 15px rgba(255,255,255,0.5);
+            --shadow: 10px 10px 20px rgba(0,0,0,0.1);
         }
 
         body {
@@ -21,174 +21,189 @@
             color: var(--text-dark);
             margin: 0; padding: 0;
             display: flex; justify-content: center;
-            min-height: 100vh;
-            overflow-x: hidden;
+            min-height: 100vh; overflow-x: hidden;
         }
 
-        .vine-bg {
+        /* --- MAXIMALIST NATURE BACKGROUND --- */
+        .nature-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: -1; opacity: 0.3;
+            pointer-events: none; z-index: -1;
         }
 
-        #app-container { width: 100%; max-width: 450px; padding: 20px; box-sizing: border-box; }
+        #app-container { width: 100%; max-width: 450px; padding: 20px; box-sizing: border-box; z-index: 10; }
 
         .card {
-            background: var(--card-tan); border-radius: 25px; padding: 25px;
-            box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.05);
+            background: var(--glass-tan);
+            backdrop-filter: blur(8px);
+            border-radius: 30px; padding: 25px;
+            box-shadow: var(--shadow); margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.4);
+            position: relative;
         }
 
-        .home-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-staff {
-            background: var(--moss-green); color: white; padding: 6px 12px;
-            border-radius: 8px; font-size: 0.75rem; cursor: pointer; border: none;
-            width: auto; min-width: 80px; transition: 0.3s;
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.4); padding: 15px; border-radius: 20px;
+            text-align: center; border: 1px solid rgba(255,255,255,0.5);
         }
+        .stat-val { font-size: 1.8rem; font-weight: bold; color: var(--moss-green); display: block; }
+        .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; }
 
-        .toolkit-item {
-            background: var(--moss-green); color: white; padding: 22px;
-            border-radius: 20px; margin-bottom: 15px; cursor: pointer; text-align: center; font-weight: bold;
+        /* SECRET STAFF BUTTON (Ladybug) */
+        .staff-secret {
+            position: absolute; bottom: 12px; right: 20px;
+            width: 12px; height: 10px; background: var(--ladybug-red);
+            border-radius: 50%; cursor: pointer; opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+        .staff-secret::after {
+            content: ''; position: absolute; top: 2px; left: 5px;
+            width: 2px; height: 2px; background: black; border-radius: 50%;
+            box-shadow: 2px 2px 0 black, -2px 3px 0 black;
         }
 
         button {
-            border: none; border-radius: 15px; padding: 16px; font-weight: 600; cursor: pointer;
-            width: 100%; margin: 8px 0; font-size: 1rem; transition: 0.3s;
+            border: none; border-radius: 18px; padding: 18px; font-weight: 600; 
+            cursor: pointer; width: 100%; margin: 8px 0; font-size: 1rem; transition: 0.3s;
         }
-
         .btn-primary { background: var(--moss-green); color: white; }
         .btn-secondary { background: var(--light-green); color: white; }
 
-        input, select, textarea {
-            width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px;
-            border: 1px solid #ccc; background: #fdfdfd; box-sizing: border-box;
-        }
-
         .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .mood-btn {
-            background: var(--bg-earth); padding: 15px; border-radius: 15px;
+            background: white; padding: 15px; border-radius: 15px;
             border: 2px solid transparent; text-align: center; cursor: pointer;
         }
         .mood-btn.selected { border-color: var(--moss-green); background: var(--light-green); color: white; }
 
+        input, select, textarea {
+            width: 100%; padding: 15px; margin: 10px 0; border-radius: 15px;
+            border: 1px solid #ccc; background: rgba(255,255,255,0.8); box-sizing: border-box;
+        }
+
         nav {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 400px; background: var(--moss-green);
-            border-radius: 30px; padding: 10px; display: flex; justify-content: space-around;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000;
+            width: 85%; max-width: 380px; background: var(--moss-green);
+            border-radius: 35px; padding: 12px; display: flex; justify-content: space-around;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2); z-index: 1000;
         }
-        nav button { background: none; box-shadow: none; width: 60px; height: 50px; color: rgba(255,255,255,0.6); font-size: 1.5rem; }
+        nav button { background: none; box-shadow: none; width: 50px; height: 50px; color: rgba(255,255,255,0.5); font-size: 1.4rem; padding:0; margin:0;}
         nav button.active-nav { color: white; }
 
-        .screen { display: none; padding-bottom: 120px; animation: fadeIn 0.4s; }
+        .screen { display: none; padding-bottom: 120px; animation: slideUp 0.5s ease; }
         .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* Practice Overlay Fixes */
+        /* Breathing Overlay */
         #practice-overlay {
             position: fixed; top:0; left:0; width: 100%; height: 100%;
             background: var(--bg-earth); z-index: 2000; display: none; flex-direction: column;
         }
-        .practice-section-header { flex: 0 0 15%; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-        .practice-section-body { 
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            padding: 40px; position: relative; overflow: visible; /* Changed to visible to prevent circle cutting */
-        }
-        .practice-section-footer { flex: 0 0 25%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        
-        #practice-instruction {
-            position: absolute; z-index: 10; text-align: center;
-            font-size: 1.8rem; font-weight: bold; color: var(--text-dark);
-            text-shadow: 0 0 10px white;
-        }
-
-        #breathing-box {
-            width: 220px; height: 220px; border: 4px solid var(--moss-translucent);
-            position: relative; display: none;
-        }
-        #guiding-orb {
-            width: 24px; height: 24px; background: var(--moss-green); border-radius: 50%;
-            position: absolute; top: -14px; left: -14px; box-shadow: 0 0 15px var(--moss-green);
-        }
-
-        #breath-circle {
-            width: 150px; height: 150px; background: var(--moss-translucent);
-            border-radius: 50%; transition: transform 4s ease-in-out; display: none;
-        }
+        .p-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        #p-instruction { font-size: 2rem; font-weight: bold; position: absolute; z-index: 10; }
+        #b-circle { width: 200px; height: 200px; background: rgba(74, 93, 76, 0.2); border-radius: 50%; transition: transform 4s ease-in-out; display: none; }
+        #b-box { width: 240px; height: 240px; border: 4px solid rgba(74, 93, 76, 0.2); position: relative; display: none; }
+        #orb { width: 24px; height: 24px; background: var(--moss-green); border-radius: 50%; position: absolute; top: -14px; left: -14px; }
     </style>
 </head>
 <body>
 
-    <svg class="vine-bg" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path d="M-5,10 Q15,5 30,25 T60,10 T105,30" stroke="#4A5D4C" fill="none" stroke-width="0.3" />
-        <path d="M105,70 Q80,85 50,65 T0,90" stroke="#4A5D4C" fill="none" stroke-width="0.2" />
-        <path d="M10,0 L15,15 Q30,40 10,60" stroke="#4A5D4C" fill="none" stroke-width="0.15" />
-        <path d="M90,0 Q70,30 90,60 T80,100" stroke="#4A5D4C" fill="none" stroke-width="0.2" />
-        <path d="M0,50 Q40,40 100,50" stroke="#4A5D4C" fill="none" stroke-width="0.1" />
+    <svg class="nature-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path d="M-5,30 Q10,10 30,25 T60,5 T90,20" stroke="#4A5D4C" fill="none" stroke-width="0.3" />
+        <path d="M105,40 Q85,15 65,35 T30,10" stroke="#4A5D4C" fill="none" stroke-width="0.25" opacity="0.6"/>
+        <path d="M-10,95 Q20,70 50,90 T110,80" stroke="#38493A" fill="none" stroke-width="0.4" />
+        <g fill="#D48E8E" opacity="0.8">
+            <circle cx="5" cy="92" r="2"/><circle cx="12" cy="93" r="2"/><circle cx="48" cy="91" r="2"/><circle cx="95" cy="95" r="2.5"/>
+        </g>
+        <g stroke="#4A5D4C" fill="none" stroke-width="0.4">
+            <path d="M70,15 Q72,13 74,15 M74,15 Q76,17 78,15" />
+            <path d="M20,50 Q22,48 24,50 M24,50 Q26,52 28,50" opacity="0.4" />
+        </g>
     </svg>
 
     <div id="app-container">
-        <div id="screen-onboarding" class="screen">
-            <div class="card">
-                <h2>Welcome</h2>
-                <input type="text" id="user-name" placeholder="Full Name">
-                <select id="user-level">
+        <!-- Setup Screen -->
+        <div id="screen-setup" class="screen">
+            <div class="card" style="text-align: center;">
+                <h2>PSL Tracker</h2>
+                <input type="text" id="set-name" placeholder="Full Name">
+                <select id="set-level">
                     <option value="">Select Year</option>
                     <option value="Year 1">Year 1</option><option value="Year 2">Year 2</option>
                     <option value="Year 3">Year 3</option><option value="Year 4">Year 4</option>
                 </select>
-                <button class="btn-primary" onclick="saveProfile()">Get Started</button>
+                <button class="btn-primary" onclick="initUser()">Start Tracker</button>
             </div>
         </div>
 
+        <!-- Dashboard -->
         <div id="screen-home" class="screen">
-            <div class="home-header">
-                <h2 id="welcome-text" style="margin:0;">Hi</h2>
-                <button class="btn-staff" onclick="showScreen('screen-staff')">For Staff</button>
+            <h2 id="greet">Hi</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <span class="stat-val" id="stat-sessions">0</span>
+                    <span class="stat-label">Logs</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-val" id="stat-peers">0</span>
+                    <span class="stat-label">Peers</span>
+                </div>
             </div>
-            <div class="card">
-                <h3 style="margin-top:0;">Overall Mood Average</h3>
-                <div id="mood-stat-container" style="font-size: 3rem; font-weight: bold; text-align: center; color: var(--moss-green);">--</div>
-                <p id="mood-stat-count" style="text-align: center; opacity: 0.7;">Establish baseline (3 logs)...</p>
+            <div class="card" style="text-align: center; padding-bottom: 40px;">
+                <span class="stat-label">Wellbeing Score</span>
+                <span class="stat-val" id="stat-mood" style="font-size: 3.5rem;">--</span>
+                <div class="staff-secret" onclick="showScreen('screen-staff')"></div>
             </div>
             <button class="btn-primary" onclick="showScreen('screen-log')">Record Support Session</button>
             <button class="btn-secondary" onclick="showScreen('screen-mood')">Log My Mood</button>
         </div>
 
+        <!-- Log Session -->
         <div id="screen-log" class="screen">
             <div class="card">
                 <h3>Session Log</h3>
+                <p style="background: rgba(255,255,255,0.5); padding: 10px; border-radius: 12px; font-size: 0.8rem; color: #721c24;">
+                    <strong>Notice:</strong> Strictly do not include peer names or class information.
+                </p>
+                <label>Date</label>
                 <input type="date" id="log-date">
-                <input type="number" id="log-peers" placeholder="Number of peers supported">
+                <input type="number" id="log-peers" placeholder="Peers Supported">
                 <select id="log-type">
                     <option value="Emotional support">Emotional support</option>
                     <option value="Relational support">Relational support</option>
                     <option value="Navigational support">Navigational support</option>
                     <option value="Proactive support">Proactive support</option>
                 </select>
-                <button class="btn-primary" onclick="saveLog()">Save Log</button>
+                <textarea id="log-reflect" rows="4" placeholder="Mandatory Reflection..."></textarea>
+                <button class="btn-primary" onclick="saveSession()">Save Entry</button>
                 <button onclick="showScreen('screen-home')">Cancel</button>
             </div>
         </div>
 
+        <!-- Mood Track -->
         <div id="screen-mood" class="screen">
             <div class="card">
-                <h3>Mood Check-in</h3>
-                <div class="mood-grid" id="mood-grid-container"></div>
-                <textarea id="mood-reason" placeholder="Mandatory: Why are you feeling this way?" rows="3" style="margin-top:20px;"></textarea>
-                <button id="mood-submit-btn" class="btn-primary" style="opacity: 0.5;" disabled onclick="submitMood()">Submit Mood</button>
+                <h3>Current Mood</h3>
+                <div class="mood-grid" id="mood-options-container"></div>
+                <textarea id="mood-reflect" rows="3" style="margin-top:20px;" placeholder="Mandatory: Why do you feel this way?"></textarea>
+                <button class="btn-primary" id="mood-submit" disabled onclick="saveMoodEntry()">Save Mood</button>
+                <button onclick="showScreen('screen-home')">Cancel</button>
             </div>
         </div>
 
+        <!-- Toolkit -->
         <div id="screen-library" class="screen">
-            <h2>Regulation Toolkit</h2>
-            <div class="toolkit-item" onclick="openPractice('box')">Box Breathing</div>
-            <div class="toolkit-item" onclick="openPractice('478')">4-7-8 Breathing</div>
+            <h2>Toolkit</h2>
+            <div class="card" onclick="openPractice('box')"><h3>Box Breathing</h3></div>
+            <div class="card" onclick="openPractice('478')"><h3>4-7-8 Breathing</h3></div>
         </div>
 
+        <!-- Staff Portal -->
         <div id="screen-staff" class="screen">
-            <div class="card">
-                <h3>Staff Data Portal</h3>
-                <input type="password" id="staff-pw" placeholder="Enter Staff Password">
-                <button class="btn-primary" onclick="exportData()">Download Report</button>
+            <div class="card" style="text-align: center;">
+                <h2>Administrative</h2>
+                <p>Generate Excel report for Supervisor review.</p>
+                <button class="btn-primary" onclick="exportToExcel()">Generate Report</button>
                 <button onclick="showScreen('screen-home')">Back</button>
             </div>
         </div>
@@ -199,43 +214,70 @@
         </nav>
     </div>
 
+    <!-- Practice Overlay -->
     <div id="practice-overlay">
-        <div class="practice-section-header">
-            <h2 id="practice-title" style="margin:0;">Technique</h2>
+        <div class="p-body">
+            <div id="p-instruction">Ready?</div>
+            <div id="b-box"><div id="orb"></div></div>
+            <div id="b-circle"></div>
         </div>
-        <div class="practice-section-body">
-            <div id="practice-instruction">Ready?</div>
-            <div id="breathing-box"><div id="guiding-orb"></div></div>
-            <div id="breath-circle"></div>
-        </div>
-        <div class="practice-section-footer">
-            <button id="start-practice-btn" class="btn-primary" style="width: 240px;" onclick="startActivity()">Start</button>
-            <button id="exit-practice-btn" class="btn-primary" style="width: 240px;" onclick="closePractice()">Exit</button>
+        <!-- Centered Buttons in Footer -->
+        <div style="padding: 40px; text-align: center;">
+            <button id="p-start" class="btn-primary" style="width: 200px; margin: 8px auto; display: block;" onclick="beginActivity()">Start</button>
+            <button class="btn-secondary" style="width: 200px; margin: 8px auto; display: block;" onclick="closePractice()">Exit</button>
         </div>
     </div>
 
     <script>
-        let logs = JSON.parse(localStorage.getItem('psl_logs_v8')) || [];
-        let moods = JSON.parse(localStorage.getItem('psl_moods_v8')) || [];
-        let user = JSON.parse(localStorage.getItem('psl_user_v8')) || null;
+        let db;
+        const request = indexedDB.open("PSLTracker_Final_Update", 1);
 
-        const moodOptions = ["Drained", "Exhausted", "Bored", "Jaded", "Calm", "Content", "Happy", "Relaxed", "Motivated", "Confident"];
-        const moodMap = { "Drained":1, "Exhausted":1, "Bored":2, "Jaded":2, "Calm":3, "Content":3, "Happy":4, "Relaxed":4, "Motivated":5, "Confident":5 };
-        let selectedMoodLabel = null;
-
-        window.onload = () => {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('log-date').setAttribute('max', today);
-            document.getElementById('log-date').value = today;
-            if (!user) { showScreen('screen-onboarding'); } 
-            else { 
-                document.getElementById('main-nav').style.display = 'flex';
-                document.getElementById('welcome-text').innerText = `Hi ${user.name}`;
-                updateDashboard();
-                showScreen('screen-home');
-            }
-            renderMoodGrid();
+        request.onupgradeneeded = (e) => {
+            db = e.target.result;
+            db.createObjectStore("sessions", { autoIncrement: true });
+            db.createObjectStore("moods", { autoIncrement: true });
+            db.createObjectStore("user", { keyPath: "id" });
         };
+
+        request.onsuccess = (e) => {
+            db = e.target.result;
+            checkUser();
+        };
+
+        function checkUser() {
+            db.transaction("user").objectStore("user").get(1).onsuccess = (e) => {
+                if (e.target.result) {
+                    window.currentUser = e.target.result;
+                    document.getElementById('main-nav').style.display = 'flex';
+                    document.getElementById('greet').innerText = `Hi ${window.currentUser.name}`;
+                    updateDashboardStats();
+                    showScreen('screen-home');
+                } else { showScreen('screen-setup'); }
+            };
+        }
+
+        function initUser() {
+            const name = document.getElementById('set-name').value;
+            const level = document.getElementById('set-level').value;
+            if (name && level) {
+                const tx = db.transaction("user", "readwrite");
+                tx.objectStore("user").put({ id: 1, name, level });
+                tx.oncomplete = () => location.reload();
+            }
+        }
+
+        async function updateDashboardStats() {
+            db.transaction("sessions").objectStore("sessions").getAll().onsuccess = (e) => {
+                document.getElementById('stat-sessions').innerText = e.target.result.length;
+                document.getElementById('stat-peers').innerText = e.target.result.reduce((a, b) => a + parseInt(b.peers || 0), 0);
+            };
+            db.transaction("moods").objectStore("moods").getAll().onsuccess = (e) => {
+                const data = e.target.result;
+                if (data.length >= 3) {
+                    document.getElementById('stat-mood').innerText = (data.reduce((a, b) => a + b.val, 0) / data.length).toFixed(1);
+                }
+            };
+        }
 
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -243,129 +285,109 @@
             document.getElementById(id).classList.add('active');
             if(id === 'screen-home') document.getElementById('nav-home').classList.add('active-nav');
             if(id === 'screen-library') document.getElementById('nav-lib').classList.add('active-nav');
-            window.scrollTo(0,0);
+            if(id === 'screen-mood') prepareMoodGrid();
+            if(id === 'screen-log') document.getElementById('log-date').valueAsDate = new Date();
         }
 
-        function saveProfile() {
-            const name = document.getElementById('user-name').value;
-            const level = document.getElementById('user-level').value;
-            if (name && level) {
-                user = { name, level };
-                localStorage.setItem('psl_user_v8', JSON.stringify(user));
-                location.reload();
-            }
-        }
+        const moodsArray = [{v:1, l:"Drained"}, {v:1, l:"Exhausted"}, {v:2, l:"Bored"}, {v:2, l:"Jaded"}, {v:3, l:"Calm"}, {v:3, l:"Content"}, {v:4, l:"Happy"}, {v:4, l:"Relaxed"}, {v:5, l:"Motivated"}, {v:5, l:"Confident"}];
+        let selectedMood = null;
 
-        function renderMoodGrid() {
-            const container = document.getElementById('mood-grid-container');
-            moodOptions.forEach(m => {
-                const btn = document.createElement('div');
-                btn.className = 'mood-btn'; btn.innerText = m;
-                btn.onclick = () => {
-                    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-                    btn.classList.add('selected'); selectedMoodLabel = m; checkMoodValidity();
+        function prepareMoodGrid() {
+            const container = document.getElementById('mood-options-container');
+            container.innerHTML = "";
+            [...moodsArray].sort(() => Math.random() - 0.5).forEach(m => {
+                const b = document.createElement('div');
+                b.className = 'mood-btn'; b.innerText = m.l;
+                b.onclick = () => {
+                    document.querySelectorAll('.mood-btn').forEach(x => x.classList.remove('selected'));
+                    b.classList.add('selected'); selectedMood = m; validateMood();
                 };
-                container.appendChild(btn);
+                container.appendChild(b);
             });
-            document.getElementById('mood-reason').oninput = checkMoodValidity;
+            document.getElementById('mood-reflect').oninput = validateMood;
         }
 
-        function checkMoodValidity() {
-            const btn = document.getElementById('mood-submit-btn');
-            const reason = document.getElementById('mood-reason').value;
-            if (selectedMoodLabel && reason.trim().length > 2) {
-                btn.style.opacity = 1; btn.disabled = false;
-            } else { btn.style.opacity = 0.5; btn.disabled = true; }
+        function validateMood() {
+            document.getElementById('mood-submit').disabled = !(selectedMood && document.getElementById('mood-reflect').value.trim().length > 3);
         }
 
-        function submitMood() {
-            moods.push({ val: moodMap[selectedMoodLabel], label: selectedMoodLabel, reason: document.getElementById('mood-reason').value, date: new Date().toISOString() });
-            localStorage.setItem('psl_moods_v8', JSON.stringify(moods));
-            updateDashboard(); showScreen('screen-home');
-            document.getElementById('mood-reason').value = "";
+        function saveMoodEntry() {
+            const tx = db.transaction("moods", "readwrite");
+            tx.objectStore("moods").add({ val: selectedMood.v, label: selectedMood.l, reflection: document.getElementById('mood-reflect').value, date: new Date().toISOString() });
+            tx.oncomplete = () => { updateDashboardStats(); showScreen('screen-home'); };
         }
 
-        function updateDashboard() {
-            if (moods.length < 3) {
-                document.getElementById('mood-stat-container').innerText = "--";
-            } else {
-                const avg = (moods.reduce((a,b) => a + b.val, 0) / moods.length).toFixed(1);
-                document.getElementById('mood-stat-container').innerText = avg;
-                document.getElementById('mood-stat-count').innerText = `Based on ${moods.length} logs`;
-            }
-        }
-
-        function saveLog() {
+        function saveSession() {
             const peers = document.getElementById('log-peers').value;
-            if (!peers) { alert("Enter number of peers."); return; }
-            logs.push({ date: document.getElementById('log-date').value, peers: parseInt(peers), type: document.getElementById('log-type').value });
-            localStorage.setItem('psl_logs_v8', JSON.stringify(logs));
-            showScreen('screen-home');
+            const reflect = document.getElementById('log-reflect').value;
+            if (!peers || reflect.trim().length < 5) { alert("Please complete reflection."); return; }
+            const tx = db.transaction("sessions", "readwrite");
+            tx.objectStore("sessions").add({ date: document.getElementById('log-date').value, peers: peers, type: document.getElementById('log-type').value, reflection: reflect });
+            tx.oncomplete = () => { updateDashboardStats(); showScreen('screen-home'); };
         }
 
-        // --- REGULATION LOGIC ---
-        let practiceMode = "";
-        let pTimer = null;
-
-        function openPractice(mode) {
-            practiceMode = mode;
-            document.getElementById('practice-overlay').style.display = 'flex';
-            document.getElementById('practice-title').innerText = (mode === 'box') ? "Box Breathing" : "4-7-8 Breathing";
-            document.getElementById('start-practice-btn').style.display = 'block';
-            document.getElementById('practice-instruction').innerText = "Begin Practice";
-            document.getElementById('breathing-box').style.display = 'none';
-            document.getElementById('breath-circle').style.display = 'none';
-        }
-
+        let pMode = ""; let pTimer = null;
+        function openPractice(m) { pMode = m; document.getElementById('practice-overlay').style.display = 'flex'; resetP(); }
         function closePractice() { clearInterval(pTimer); document.getElementById('practice-overlay').style.display = 'none'; }
-
-        function startActivity() {
-            document.getElementById('start-practice-btn').style.display = 'none';
-            const txt = document.getElementById('practice-instruction');
-            clearInterval(pTimer);
-
-            if (practiceMode === 'box') {
-                document.getElementById('breathing-box').style.display = 'block';
-                const orb = document.getElementById('guiding-orb');
+        function resetP() { document.getElementById('p-start').style.display = 'block'; document.getElementById('b-box').style.display = 'none'; document.getElementById('b-circle').style.display = 'none'; document.getElementById('p-instruction').innerText = "Focus"; }
+        
+        function beginActivity() {
+            document.getElementById('p-start').style.display = 'none';
+            const txt = document.getElementById('p-instruction');
+            if(pMode === 'box') {
+                document.getElementById('b-box').style.display = 'block';
+                const orb = document.getElementById('orb');
                 const path = ["top:-14px; left:-14px;", "top:-14px; left:210px;", "top:210px; left:210px;", "top:210px; left:-14px;"];
                 const cues = ["Inhale", "Hold", "Exhale", "Hold"];
                 let s = 0;
-                const step = () => {
-                    txt.innerText = cues[s % 4];
-                    orb.style.cssText = path[s % 4] + " transition: all 4s linear;";
-                    s++;
-                };
-                step();
-                pTimer = setInterval(step, 4000);
+                const step = () => { txt.innerText = cues[s % 4]; orb.style.cssText = path[s % 4] + " transition: all 4s linear;"; s++; };
+                step(); pTimer = setInterval(step, 4000);
             } else {
-                document.getElementById('breath-circle').style.display = 'block';
-                const circle = document.getElementById('breath-circle');
-                const run478 = () => {
-                    txt.innerText = "Inhale"; circle.style.transform = "scale(2.0)";
-                    setTimeout(() => {
-                        txt.innerText = "Hold";
-                        setTimeout(() => {
-                            txt.innerText = "Exhale"; circle.style.transform = "scale(0.8)";
-                        }, 7000);
-                    }, 4000);
+                document.getElementById('b-circle').style.display = 'block';
+                const c = document.getElementById('b-circle');
+                const run = () => {
+                    txt.innerText = "Inhale"; c.style.transform = "scale(2.0)";
+                    setTimeout(() => { txt.innerText = "Hold"; setTimeout(() => { txt.innerText = "Exhale"; c.style.transform = "scale(0.8)"; }, 7000); }, 4000);
                 };
-                run478();
-                pTimer = setInterval(run478, 19500);
+                run(); pTimer = setInterval(run, 19500);
             }
         }
 
-        function exportData() {
-            if (document.getElementById('staff-pw').value !== "PSL2026") { alert("Access Denied"); return; }
-            const avg = moods.length > 0 ? (moods.reduce((a,b) => a + b.val, 0) / moods.length).toFixed(2) : "N/A";
-            let csv = "\ufeffPSL Name," + user.name + "\nLevel," + user.level + "\nAverage Mood," + avg + "\n\n";
-            csv += "MOOD RECORDS\nDate,Mood,Reason\n";
-            moods.forEach(m => csv += `${m.date},${m.label},"${m.reason.replace(/"/g, '""')}"\n`);
-            csv += "\nSESSION LOGS\nDate,Peers,Type\n";
-            logs.forEach(l => csv += `${l.date},${l.peers},${l.type}\n`);
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = `Report_${user.name}.csv`; a.click();
+        function exportToExcel() {
+            const sStore = db.transaction("sessions").objectStore("sessions").getAll();
+            const mStore = db.transaction("moods").objectStore("moods").getAll();
+
+            sStore.onsuccess = () => {
+                mStore.onsuccess = () => {
+                    const sessionData = sStore.result;
+                    const moodData = mStore.result;
+                    const totalPeers = sessionData.reduce((a, b) => a + parseInt(b.peers || 0), 0);
+                    const avgMood = moodData.length > 0 ? (moodData.reduce((a, b) => a + b.val, 0) / moodData.length).toFixed(2) : "N/A";
+
+                    let xml = `<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="PSL Report"><Table>`;
+                    xml += `<Row><Cell><Data ss:Type="String">PSL NAME:</Data></Cell><Cell><Data ss:Type="String">${window.currentUser.name}</Data></Cell></Row>`;
+                    xml += `<Row><Cell><Data ss:Type="String">LEVEL:</Data></Cell><Cell><Data ss:Type="String">${window.currentUser.level}</Data></Cell></Row>`;
+                    xml += `<Row><Cell><Data ss:Type="String">TOTAL PEERS SUPPORTED:</Data></Cell><Cell><Data ss:Type="Number">${totalPeers}</Data></Cell></Row>`;
+                    xml += `<Row><Cell><Data ss:Type="String">OVERALL MOOD AVERAGE:</Data></Cell><Cell><Data ss:Type="Number">${avgMood}</Data></Cell></Row>`;
+                    xml += `<Row></Row>`;
+                    xml += `<Row><Cell><Data ss:Type="String">PEER SUPPORT LOGS</Data></Cell></Row>`;
+                    xml += `<Row><Cell><Data ss:Type="String">Date</Data></Cell><Cell><Data ss:Type="String">Peers Supported</Data></Cell><Cell><Data ss:Type="String">Type</Data></Cell><Cell><Data ss:Type="String">Reflection</Data></Cell></Row>`;
+                    sessionData.forEach(s => {
+                        xml += `<Row><Cell><Data ss:Type="String">${s.date}</Data></Cell><Cell><Data ss:Type="Number">${s.peers}</Data></Cell><Cell><Data ss:Type="String">${s.type}</Data></Cell><Cell><Data ss:Type="String">${s.reflection.replace(/[<>&'"]/g, '')}</Data></Cell></Row>`;
+                    });
+                    xml += `<Row></Row>`;
+                    xml += `<Row><Cell><Data ss:Type="String">MOOD & WELLBEING LOGS</Data></Cell></Row>`;
+                    xml += `<Row><Cell><Data ss:Type="String">Date</Data></Cell><Cell><Data ss:Type="String">Mood Label</Data></Cell><Cell><Data ss:Type="String">Mood Value</Data></Cell><Cell><Data ss:Type="String">Reason (Reflection)</Data></Cell></Row>`;
+                    moodData.forEach(m => {
+                        xml += `<Row><Cell><Data ss:Type="String">${m.date.split('T')[0]}</Data></Cell><Cell><Data ss:Type="String">${m.label}</Data></Cell><Cell><Data ss:Type="Number">${m.val}</Data></Cell><Cell><Data ss:Type="String">${m.reflection.replace(/[<>&'"]/g, '')}</Data></Cell></Row>`;
+                    });
+                    xml += `</Table></Worksheet></Workbook>`;
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(new Blob([xml], { type: "application/vnd.ms-excel" }));
+                    a.download = `PSL_Report_${window.currentUser.name.replace(/ /g, '_')}.xls`;
+                    a.click();
+                };
+            };
         }
     </script>
 </body>
