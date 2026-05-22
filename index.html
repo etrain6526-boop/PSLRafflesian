@@ -7,12 +7,13 @@
     <style>
         :root {
             --bg-earth: #EAE3D9;
-            --glass-tan: rgba(217, 210, 197, 0.85);
+            --glass-tan: rgba(217, 210, 197, 0.9);
             --moss-green: #4A5D4C;
             --light-green: #8BA18E;
             --ladybug-red: #A34A4A;
+            --error-red: #D32F2F;
             --text-dark: #2F3630;
-            --shadow: 10px 10px 20px rgba(0,0,0,0.1);
+            --shadow: 10px 10px 20px rgba(0,0,0,0.05);
         }
 
         body {
@@ -24,26 +25,19 @@
             min-height: 100vh; overflow-x: hidden;
         }
 
-        /* --- MAXIMALIST NATURE BACKGROUND --- */
-        .nature-layer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: -1;
-        }
-
         #app-container { width: 100%; max-width: 450px; padding: 20px; box-sizing: border-box; z-index: 10; }
 
         .card {
             background: var(--glass-tan);
-            backdrop-filter: blur(8px);
             border-radius: 30px; padding: 25px;
             box-shadow: var(--shadow); margin-bottom: 25px;
-            border: 1px solid rgba(255,255,255,0.4);
+            border: 1px solid rgba(0,0,0,0.05);
             position: relative;
         }
 
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .stat-card {
-            background: rgba(255, 255, 255, 0.4); padding: 15px; border-radius: 20px;
+            background: rgba(255, 255, 255, 0.5); padding: 15px; border-radius: 20px;
             text-align: center; border: 1px solid rgba(255,255,255,0.5);
         }
         .stat-val { font-size: 1.8rem; font-weight: bold; color: var(--moss-green); display: block; }
@@ -53,8 +47,7 @@
         .staff-secret {
             position: absolute; bottom: 12px; right: 20px;
             width: 12px; height: 10px; background: var(--ladybug-red);
-            border-radius: 50%; cursor: pointer; opacity: 0.6;
-            transition: opacity 0.3s;
+            border-radius: 50%; cursor: pointer; opacity: 0.5;
         }
         .staff-secret::after {
             content: ''; position: absolute; top: 2px; left: 5px;
@@ -77,24 +70,30 @@
         .mood-btn.selected { border-color: var(--moss-green); background: var(--light-green); color: white; }
 
         input, select, textarea {
-            width: 100%; padding: 15px; margin: 10px 0; border-radius: 15px;
-            border: 1px solid #ccc; background: rgba(255,255,255,0.8); box-sizing: border-box;
+            width: 100%; padding: 15px; margin: 5px 0; border-radius: 15px;
+            border: 1px solid #ccc; background: rgba(255,255,255,0.9); box-sizing: border-box;
+            display: block; font-family: inherit;
+        }
+
+        .error-msg {
+            color: var(--error-red); font-size: 0.75rem; font-weight: 600;
+            margin-bottom: 10px; display: none;
         }
 
         nav {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             width: 85%; max-width: 380px; background: var(--moss-green);
             border-radius: 35px; padding: 12px; display: flex; justify-content: space-around;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.2); z-index: 1000;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1); z-index: 1000;
         }
         nav button { background: none; box-shadow: none; width: 50px; height: 50px; color: rgba(255,255,255,0.5); font-size: 1.4rem; padding:0; margin:0;}
-        nav button.active-nav { color: white; }
+        nav button.active-nav { color: white; transform: scale(1.1); }
 
-        .screen { display: none; padding-bottom: 120px; animation: slideUp 0.5s ease; }
+        .screen { display: none; padding-bottom: 120px; animation: fadeIn 0.4s ease; }
         .screen.active { display: block; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Breathing Overlay */
+        /* Regulation Area */
         #practice-overlay {
             position: fixed; top:0; left:0; width: 100%; height: 100%;
             background: var(--bg-earth); z-index: 2000; display: none; flex-direction: column;
@@ -108,37 +107,30 @@
 </head>
 <body>
 
-    <svg class="nature-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path d="M-5,30 Q10,10 30,25 T60,5 T90,20" stroke="#4A5D4C" fill="none" stroke-width="0.3" />
-        <path d="M105,40 Q85,15 65,35 T30,10" stroke="#4A5D4C" fill="none" stroke-width="0.25" opacity="0.6"/>
-        <path d="M-10,95 Q20,70 50,90 T110,80" stroke="#38493A" fill="none" stroke-width="0.4" />
-        <g fill="#D48E8E" opacity="0.8">
-            <circle cx="5" cy="92" r="2"/><circle cx="12" cy="93" r="2"/><circle cx="48" cy="91" r="2"/><circle cx="95" cy="95" r="2.5"/>
-        </g>
-        <g stroke="#4A5D4C" fill="none" stroke-width="0.4">
-            <path d="M70,15 Q72,13 74,15 M74,15 Q76,17 78,15" />
-            <path d="M20,50 Q22,48 24,50 M24,50 Q26,52 28,50" opacity="0.4" />
-        </g>
-    </svg>
-
     <div id="app-container">
         <!-- Setup Screen -->
         <div id="screen-setup" class="screen">
             <div class="card" style="text-align: center;">
                 <h2>PSL Tracker</h2>
                 <input type="text" id="set-name" placeholder="Full Name">
+                <div id="err-setup-name" class="error-msg">Mandatory field required, A "NIL" or "NA" is needed.</div>
+                
                 <select id="set-level">
                     <option value="">Select Year</option>
                     <option value="Year 1">Year 1</option><option value="Year 2">Year 2</option>
                     <option value="Year 3">Year 3</option><option value="Year 4">Year 4</option>
                 </select>
+                <div id="err-setup-level" class="error-msg">Mandatory field required, A "NIL" or "NA" is needed.</div>
+                
                 <button class="btn-primary" onclick="initUser()">Start Tracker</button>
             </div>
         </div>
 
         <!-- Dashboard -->
         <div id="screen-home" class="screen">
-            <h2 id="greet">Hi</h2>
+            <div style="display:flex; justify-content: space-between; align-items: baseline;">
+                <h2 id="greet">Hi</h2>
+            </div>
             <div class="stat-grid">
                 <div class="stat-card">
                     <span class="stat-val" id="stat-sessions">0</span>
@@ -152,29 +144,47 @@
             <div class="card" style="text-align: center; padding-bottom: 40px;">
                 <span class="stat-label">Wellbeing Score</span>
                 <span class="stat-val" id="stat-mood" style="font-size: 3.5rem;">--</span>
-                <div class="staff-secret" onclick="showScreen('screen-staff')"></div>
+                <div class="staff-secret" onclick="showScreen('screen-staff')" title="Staff Access"></div>
             </div>
             <button class="btn-primary" onclick="showScreen('screen-log')">Record Support Session</button>
             <button class="btn-secondary" onclick="showScreen('screen-mood')">Log My Mood</button>
         </div>
 
-        <!-- Log Session -->
+        <!-- Session Log -->
         <div id="screen-log" class="screen">
             <div class="card">
                 <h3>Session Log</h3>
                 <p style="background: rgba(255,255,255,0.5); padding: 10px; border-radius: 12px; font-size: 0.8rem; color: #721c24;">
                     <strong>Notice:</strong> Strictly do not include peer names or class information.
                 </p>
+                
                 <label>Date</label>
                 <input type="date" id="log-date">
-                <input type="number" id="log-peers" placeholder="Peers Supported">
+                <div id="err-log-date" class="error-msg">Mandatory field required, A "NIL" or "NA" is needed.</div>
+
+                <label>Number of peers supported</label>
+                <input type="number" id="log-peers" placeholder="0">
+                <div id="err-log-peers" class="error-msg">Mandatory field required, A "NIL" or "NA" is needed.</div>
+                <div id="err-log-peers-neg" class="error-msg">Value input must be positive.</div>
+
+                <label>Category</label>
                 <select id="log-type">
-                    <option value="Emotional support">Emotional support</option>
-                    <option value="Relational support">Relational support</option>
-                    <option value="Navigational support">Navigational support</option>
-                    <option value="Proactive support">Proactive support</option>
+                    <option value="">Select Category</option>
+                    <option value="Emotional Support">Emotional Support (E.g. Validating emotions)</option>
+                    <option value="Relational Support">Relational Support (E.g. Checked in with peers)</option>
+                    <option value="Navigational Support">Navigational Support (E.g. Guiding peers to seek help from trusted adults)</option>
+                    <option value="Proactive Support">Proactive Support (E.g. Attended to peers with active distress)</option>
                 </select>
-                <textarea id="log-reflect" rows="4" placeholder="Mandatory Reflection..."></textarea>
+                <div id="err-log-type" class="error-msg">Mandatory field required, A "NIL" or "NA" is needed.</div>
+
+                <label>Session Notes</label>
+                <textarea id="log-notes" rows="3" placeholder="How did the session go?"></textarea>
+                <div id="err-log-notes" class="error-msg">Mandatory field required, A "NIL" or "NA" is needed.</div>
+
+                <label>Reflection</label>
+                <textarea id="log-reflect" rows="3" placeholder="How was my experience?"></textarea>
+                <div id="err-log-reflect" class="error-msg">Mandatory field required, A "NIL" or "NA" is needed.</div>
+
                 <button class="btn-primary" onclick="saveSession()">Save Entry</button>
                 <button onclick="showScreen('screen-home')">Cancel</button>
             </div>
@@ -185,8 +195,12 @@
             <div class="card">
                 <h3>Current Mood</h3>
                 <div class="mood-grid" id="mood-options-container"></div>
-                <textarea id="mood-reflect" rows="3" style="margin-top:20px;" placeholder="Mandatory: Why do you feel this way?"></textarea>
-                <button class="btn-primary" id="mood-submit" disabled onclick="saveMoodEntry()">Save Mood</button>
+                <div id="err-mood-select" class="error-msg">Mandatory field required, A "NIL" or "NA" is needed.</div>
+
+                <textarea id="mood-reflect" rows="3" style="margin-top:20px;" placeholder="What led me to feel like this?"></textarea>
+                <div id="err-mood-reflect" class="error-msg">Mandatory field required, A "NIL" or "NA" is needed.</div>
+
+                <button class="btn-primary" onclick="saveMoodEntry()">Save Mood</button>
                 <button onclick="showScreen('screen-home')">Cancel</button>
             </div>
         </div>
@@ -202,8 +216,8 @@
         <div id="screen-staff" class="screen">
             <div class="card" style="text-align: center;">
                 <h2>Administrative</h2>
-                <p>Generate Excel report for Supervisor review.</p>
-                <button class="btn-primary" onclick="exportToExcel()">Generate Report</button>
+                <p>Generate a report for Supervisor review.</p>
+                <button class="btn-primary" onclick="exportToCSV()">Download Report (CSV)</button>
                 <button onclick="showScreen('screen-home')">Back</button>
             </div>
         </div>
@@ -221,7 +235,6 @@
             <div id="b-box"><div id="orb"></div></div>
             <div id="b-circle"></div>
         </div>
-        <!-- Centered Buttons in Footer -->
         <div style="padding: 40px; text-align: center;">
             <button id="p-start" class="btn-primary" style="width: 200px; margin: 8px auto; display: block;" onclick="beginActivity()">Start</button>
             <button class="btn-secondary" style="width: 200px; margin: 8px auto; display: block;" onclick="closePractice()">Exit</button>
@@ -230,7 +243,7 @@
 
     <script>
         let db;
-        const request = indexedDB.open("PSLTracker_Final_Update", 1);
+        const request = indexedDB.open("PSLTracker_V12_CSV", 1);
 
         request.onupgradeneeded = (e) => {
             db = e.target.result;
@@ -259,6 +272,10 @@
         function initUser() {
             const name = document.getElementById('set-name').value;
             const level = document.getElementById('set-level').value;
+            
+            document.getElementById('err-setup-name').style.display = name ? 'none' : 'block';
+            document.getElementById('err-setup-level').style.display = level ? 'none' : 'block';
+
             if (name && level) {
                 const tx = db.transaction("user", "readwrite");
                 tx.objectStore("user").put({ id: 1, name, level });
@@ -300,30 +317,56 @@
                 b.className = 'mood-btn'; b.innerText = m.l;
                 b.onclick = () => {
                     document.querySelectorAll('.mood-btn').forEach(x => x.classList.remove('selected'));
-                    b.classList.add('selected'); selectedMood = m; validateMood();
+                    b.classList.add('selected'); selectedMood = m; 
                 };
                 container.appendChild(b);
             });
-            document.getElementById('mood-reflect').oninput = validateMood;
-        }
-
-        function validateMood() {
-            document.getElementById('mood-submit').disabled = !(selectedMood && document.getElementById('mood-reflect').value.trim().length > 3);
         }
 
         function saveMoodEntry() {
-            const tx = db.transaction("moods", "readwrite");
-            tx.objectStore("moods").add({ val: selectedMood.v, label: selectedMood.l, reflection: document.getElementById('mood-reflect').value, date: new Date().toISOString() });
-            tx.oncomplete = () => { updateDashboardStats(); showScreen('screen-home'); };
+            const reflect = document.getElementById('mood-reflect').value;
+            document.getElementById('err-mood-select').style.display = selectedMood ? 'none' : 'block';
+            document.getElementById('err-mood-reflect').style.display = reflect ? 'none' : 'block';
+
+            if (selectedMood && reflect) {
+                const tx = db.transaction("moods", "readwrite");
+                tx.objectStore("moods").add({ val: selectedMood.v, label: selectedMood.l, reflection: reflect, date: new Date().toISOString() });
+                tx.oncomplete = () => { 
+                    document.getElementById('mood-reflect').value = "";
+                    selectedMood = null;
+                    updateDashboardStats(); 
+                    showScreen('screen-home'); 
+                };
+            }
         }
 
         function saveSession() {
-            const peers = document.getElementById('log-peers').value;
+            const date = document.getElementById('log-date').value;
+            const peersRaw = document.getElementById('log-peers').value;
+            const type = document.getElementById('log-type').value;
+            const notes = document.getElementById('log-notes').value;
             const reflect = document.getElementById('log-reflect').value;
-            if (!peers || reflect.trim().length < 5) { alert("Please complete reflection."); return; }
-            const tx = db.transaction("sessions", "readwrite");
-            tx.objectStore("sessions").add({ date: document.getElementById('log-date').value, peers: peers, type: document.getElementById('log-type').value, reflection: reflect });
-            tx.oncomplete = () => { updateDashboardStats(); showScreen('screen-home'); };
+
+            const peers = parseInt(peersRaw);
+
+            document.getElementById('err-log-date').style.display = date ? 'none' : 'block';
+            document.getElementById('err-log-peers').style.display = peersRaw === "" ? 'block' : 'none';
+            document.getElementById('err-log-peers-neg').style.display = (peersRaw !== "" && peers < 0) ? 'block' : 'none';
+            document.getElementById('err-log-type').style.display = type ? 'none' : 'block';
+            document.getElementById('err-log-notes').style.display = notes ? 'none' : 'block';
+            document.getElementById('err-log-reflect').style.display = reflect ? 'none' : 'block';
+
+            if (date && peersRaw !== "" && peers >= 0 && type && notes && reflect) {
+                const tx = db.transaction("sessions", "readwrite");
+                tx.objectStore("sessions").add({ date, peers, type, notes, reflection: reflect });
+                tx.oncomplete = () => { 
+                    document.getElementById('log-notes').value = "";
+                    document.getElementById('log-reflect').value = "";
+                    document.getElementById('log-peers').value = "";
+                    updateDashboardStats(); 
+                    showScreen('screen-home'); 
+                };
+            }
         }
 
         let pMode = ""; let pTimer = null;
@@ -353,7 +396,8 @@
             }
         }
 
-        function exportToExcel() {
+        // --- NEW UNIVERSAL CSV EXPORT (NO CORRUPTION WARNING) ---
+        function exportToCSV() {
             const sStore = db.transaction("sessions").objectStore("sessions").getAll();
             const mStore = db.transaction("moods").objectStore("moods").getAll();
 
@@ -364,28 +408,39 @@
                     const totalPeers = sessionData.reduce((a, b) => a + parseInt(b.peers || 0), 0);
                     const avgMood = moodData.length > 0 ? (moodData.reduce((a, b) => a + b.val, 0) / moodData.length).toFixed(2) : "N/A";
 
-                    let xml = `<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="PSL Report"><Table>`;
-                    xml += `<Row><Cell><Data ss:Type="String">PSL NAME:</Data></Cell><Cell><Data ss:Type="String">${window.currentUser.name}</Data></Cell></Row>`;
-                    xml += `<Row><Cell><Data ss:Type="String">LEVEL:</Data></Cell><Cell><Data ss:Type="String">${window.currentUser.level}</Data></Cell></Row>`;
-                    xml += `<Row><Cell><Data ss:Type="String">TOTAL PEERS SUPPORTED:</Data></Cell><Cell><Data ss:Type="Number">${totalPeers}</Data></Cell></Row>`;
-                    xml += `<Row><Cell><Data ss:Type="String">OVERALL MOOD AVERAGE:</Data></Cell><Cell><Data ss:Type="Number">${avgMood}</Data></Cell></Row>`;
-                    xml += `<Row></Row>`;
-                    xml += `<Row><Cell><Data ss:Type="String">PEER SUPPORT LOGS</Data></Cell></Row>`;
-                    xml += `<Row><Cell><Data ss:Type="String">Date</Data></Cell><Cell><Data ss:Type="String">Peers Supported</Data></Cell><Cell><Data ss:Type="String">Type</Data></Cell><Cell><Data ss:Type="String">Reflection</Data></Cell></Row>`;
+                    // Helper to clean commas for CSV columns
+                    const clean = (str) => `"${String(str).replace(/"/g, '""')}"`;
+
+                    let csv = "\ufeff"; // BOM for UTF-8 compatibility in Excel
+                    
+                    // Summary Section
+                    csv += "PSL TRACKER REPORT\n";
+                    csv += `PSL Name,${clean(window.currentUser.name)}\n`;
+                    csv += `Level,${clean(window.currentUser.level)}\n`;
+                    csv += `Total Peers Supported,${totalPeers}\n`;
+                    csv += `Overall Mood Average,${avgMood}\n\n`;
+
+                    // Sessions Section
+                    csv += "SESSION LOGS\n";
+                    csv += "Date,Peers Supported,Support Type,Notes,Reflection\n";
                     sessionData.forEach(s => {
-                        xml += `<Row><Cell><Data ss:Type="String">${s.date}</Data></Cell><Cell><Data ss:Type="Number">${s.peers}</Data></Cell><Cell><Data ss:Type="String">${s.type}</Data></Cell><Cell><Data ss:Type="String">${s.reflection.replace(/[<>&'"]/g, '')}</Data></Cell></Row>`;
+                        csv += `${s.date},${s.peers},${clean(s.type)},${clean(s.notes)},${clean(s.reflection)}\n`;
                     });
-                    xml += `<Row></Row>`;
-                    xml += `<Row><Cell><Data ss:Type="String">MOOD & WELLBEING LOGS</Data></Cell></Row>`;
-                    xml += `<Row><Cell><Data ss:Type="String">Date</Data></Cell><Cell><Data ss:Type="String">Mood Label</Data></Cell><Cell><Data ss:Type="String">Mood Value</Data></Cell><Cell><Data ss:Type="String">Reason (Reflection)</Data></Cell></Row>`;
+
+                    csv += "\nMOOD LOGS\n";
+                    csv += "Date,Mood Label,Value,Reflection (What led to this)\n";
                     moodData.forEach(m => {
-                        xml += `<Row><Cell><Data ss:Type="String">${m.date.split('T')[0]}</Data></Cell><Cell><Data ss:Type="String">${m.label}</Data></Cell><Cell><Data ss:Type="Number">${m.val}</Data></Cell><Cell><Data ss:Type="String">${m.reflection.replace(/[<>&'"]/g, '')}</Data></Cell></Row>`;
+                        csv += `${m.date.split('T')[0]},${clean(m.label)},${m.val},${clean(m.reflection)}\n`;
                     });
-                    xml += `</Table></Worksheet></Workbook>`;
-                    const a = document.createElement("a");
-                    a.href = URL.createObjectURL(new Blob([xml], { type: "application/vnd.ms-excel" }));
-                    a.download = `PSL_Report_${window.currentUser.name.replace(/ /g, '_')}.xls`;
-                    a.click();
+
+                    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                    const link = document.createElement("a");
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `PSL_Report_${window.currentUser.name.replace(/ /g, '_')}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
                 };
             };
         }
